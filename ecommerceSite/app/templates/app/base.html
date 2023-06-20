@@ -80,6 +80,15 @@
                   <span style="margin-right: 10px;" >
                     <a class="nav-link active" aria-current="page" style="white-space: nowrap;" href="{% url 'orderlist' %}">{% translate "Tất cả đơn hàng" %}</a>
                   </span>
+                  <span style="margin-right: 10px;" >
+                    <a class="nav-link active" aria-current="page" style="white-space: nowrap;" href="{% url 'import_product' %}">Nhập hàng</a>
+                  </span>
+                  <span style="margin-right: 10px;" >
+                    <a class="nav-link active" aria-current="page" style="white-space: nowrap;" href="{% url 'sale' %}">Xuất hàng</a>
+                  </span>
+                  <span style="margin-right: 10px;" >
+                    <a class="nav-link active" aria-current="page" style="white-space: nowrap;" href="{% url 'add_cost' %}">Chi phí</a>
+                  </span>
                   <span style="margin-right: 10px;" class="form-inline my-2 my-lg-0 mr-3">
                     <a href="{% url 'cart' %}" style="position: relative; display: inline-block;">
                       <img id="cart-icon" src="{% static 'app/images/cart.png' %}">
@@ -103,12 +112,22 @@
         {% block cart_content %}{% endblock cart_content %}
         {% block checkout %}{% endblock checkout %}
         {% block order_list %}{% endblock order_list %}
+        {% block import_product %}{% endblock import_product %}
+        {% block sale %}{% endblock sale %}
+        {% block sale_detail %}{% endblock sale_detail %}
+        {% block sale_order_details %}{% endblock sale_order_details %}
+        {% block add_product %}{% endblock add_product %}
         {% block order-cancel-detail %}{% endblock order-cancel-detail %}
-        
+        {% block enter_work_time %}{% endblock enter_work_time %}
+        {% block salary_detail %}{% endblock salary_detail %}
+        {% block Cost %}{% endblock Cost%}
+        {% block import_order_detail %}{%endblock import_order_detail%}        
         <!-- footer -->
-        <footer class="container--fluid bg-success text-center fixed-bottom p-2 mt-5">
-            copyright 2023
-        </footer>
+        <br>
+        <br>
+        {% comment %} <footer class="container--fluid bg-success text-center fixed-bottom p-2 mt-5">
+          copyright 2023
+        </footer> {% endcomment %}
         <script src="{%static 'app/js/cart.js'%}"> </script>
 
     </body>

@@ -1,0 +1,107 @@
+{% extends 'app/base.html' %}
+
+{% block sale_detail %}
+    <h1>Sale Detail</h1>
+
+    <form method="get" id="filterForm">
+        <label for="sale_date_start">Sale Date Start:</label>
+        <input type="date" id="sale_date_start" name="sale_date_start" value="{{ request.GET.sale_date_start }}">
+        <label for="sale_date_end">Sale Date End:</label>
+        <input type="date" id="sale_date_end" name="sale_date_end" value="{{ request.GET.sale_date_end }}">
+
+        <label for="employee">Employee:</label>
+        <select id="employee" name="employee">
+            <option value="">--Select--</option>
+            {% for employee in employees %}
+                <option value="{{ employee.id }}" {% if request.GET.employee == employee.id|stringformat:"s" %}selected{% endif %}>{{ employee.name }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="customer">Customer:</label>
+        <select id="customer" name="customer">
+            <option value="">--Select--</option>
+            {% for customer in customers %}
+                <option value="{{ customer.userID }}" {% if request.GET.customer == customer.userID|stringformat:"s" %}selected{% endif %}>{{ customer.name }}</option>
+            {% endfor %}
+        </select>
+        <input type="submit" value="Filter">
+    </form>
+
+    <table class="table">
+        <tbody>
+          <tr>
+            <td>Doanh thu</td>
+            <td>{{sum_revenue|floatformat:1}}</td>
+          </tr>
+          <tr>
+            <td>Vốn</td>
+            <td>{{total_cost|floatformat:1}}</td>
+          <tr>
+            <td>Lãi suất</td>
+            <td>{{sum_interest|floatformat:1}}</td>
+          </tr>
+          <tr>
+            <td>Chi phí</td>
+            <td>{{ expense_cost }}</td>
+            
+          </tr>
+          <tr class="table-info">
+            <td>Tổng cộng</td>
+            <td>{{ profit|floatformat:1 }}</td>
+          </tr>
+          <tr>
+            <td>Hạnh</td>
+            <td>{{ hanh|floatformat:1 }}</td>
+          </tr>
+            <tr>
+                <td>Linh</td>
+                <td>{{ linh|floatformat:1 }}</td>
+            </tr>
+        </tbody>
+      </table>
+    
+    <h2>Chi tiết chi phí</h2>
+    <table class="table">
+        {% for cost in costs %}
+            <tr>
+                <td>{{ cost.description }}</td>
+                <td>{{ cost.amount }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Sale Date</th>
+                <th>Employee</th>
+                <th>Customer</th>
+                <!-- Add more columns as needed -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for sale_order in sale_orders %}
+                <tr>
+                    <td>{{ sale_order.sale_date }}</td>
+                    <td>{{ sale_order.employee.name }}</td>
+                    <td><a href="url 'admin:app_saleorder_change' sale_order.sale_orderID">{{ sale_order.customer.name }}</td>
+                    <td>{{ sale_order.total_revenue }}</td>
+                    <td>{{ sale_order.total_interest|floatformat:1  }}</td>
+                    <!-- Add more fields as needed -->
+                </tr>
+                {% for detail in sale_order.saleorderdetail_set.all %}
+                    <tr>
+                        <td></td>
+                        <td><a href="{% url 'admin:app_saleorderdetail_change' detail.id %}">{{ detail.product.name }}</td>
+                        <td>{{ detail.quantity }}</td>
+                        <td>{{ detail.product.in_price_avg|floatformat:1 }}</td>
+                        <td>{{ detail.sale_price|floatformat:1 }}</td>
+                        <td>{{ detail.revenue|floatformat:1 }}</td>
+                        <td>{{ detail.interest|floatformat:1 }}</td>
+                        <td>{{ detail.note }}</td>
+                    </tr>
+                {% endfor %}
+            {% endfor %}
+            {% comment %} <h2>Total cost: {{total_cost|floatformat:1 }}</h2> {% endcomment %}
+        </tbody>
+    </table>
+{% endblock %}

@@ -1,0 +1,202 @@
+{% extends 'app/base.html' %}
+{% load static %}
+{% load i18n %}
+{% block sale %}
+<h1><a href="{% url 'sale_detail' %}">Đơn đã xuất</a></h1>
+<h1>{{ sale_cost }}</h1>
+
+<!-- Form để nhập hàng -->
+<form method="post" action="{% url 'sale' %}">
+    {% csrf_token %}
+
+    <!-- Thông tin đơn nhập hàng -->
+    <label for="customer">Customer:</label>
+    <select name="customer_name" id="customer">
+        {% for customer in customers %}
+            <option value="{{ customer.name }}">{{ customer.name }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="employee">Employee:</label>
+    <select name="employee_name" id="employee">
+        {% for employee in employees %}
+            <option value="{{ employee.name }}">{{ employee.name }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="sale_date">Sale Date:</label>
+    <input type="date" name="sale_date" id="sale_date" required>
+
+    <!-- Chi tiết đơn nhập hàng -->
+    <div id="sale_details">
+        <div id="product_info">
+            <!-- Product information will be displayed here -->
+        </div>
+        
+        <div class="sale_detail">
+            <label for="product_1">Product:</label>
+            <!-- Include jQuery -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+        <!-- Your search box -->
+        <input type="text" id="product_search" placeholder="Search products">
+
+        <!-- Your product dropdown -->
+        <select name="product_1" id="product_1"></select>
+
+        <script>
+            $(document).ready(function() {
+                $('#product_search').on('input', function() {
+                    var searchQuery = $(this).val();
+        
+                    $.ajax({
+                        url: "{% url 'product_search' %}",
+                        data: {
+                            'search_query': searchQuery
+                        },
+                        success: function(data) {
+                            var productDropdown = $('#product_1');
+                            productDropdown.empty();
+        
+                            $.each(data.products, function(index, product) {
+                                productDropdown.append($('<option>', {
+                                    value: product.productID,
+                                    text: product.name
+                                }));
+                            });
+                        }
+                    });
+                });
+        
+                $('#product_1').on('change', function() {
+                    var selectedProductId = $(this).val();
+        
+                    $.ajax({
+                        url: "{% url 'product_info' 0 %}".replace('0', selectedProductId),
+                        success: function(data) {
+                            // Parse the JSON response
+                            var productData = JSON.parse(data.product)[0];
+                    
+                            if (productData && productData.fields) {
+                                // Update the HTML with product information
+                                $('#product_info').html(`
+                                    <h3>${productData.fields.name}</h3>
+                                    <p><strong>In Price Near:</strong> $${productData.fields.in_price_near ? productData.fields.in_price_near.toFixed(2) : 'N/A'}</p>
+                                    <p><strong>In Price Avg:</strong> $${productData.fields.in_price_avg ? productData.fields.in_price_avg.toFixed(2) : 'N/A'}</p>
+                                    <p><strong>Quantity:</strong> ${productData.fields.quantity || 'N/A'}</p>
+                                `);
+                            } else {
+                                // Handle the case where the data is not as expected
+                                console.error('Invalid product data format:', productData);
+                            }
+                        }
+                    });
+                });
+            });
+        </script>
+        
+        </div>
+        <div class="sale_detail">
+            <label for="quantity_1">Quantity:</label>
+            <input type="number" name="quantity_1" step="0.01" id="quantity_1" required>
+
+            <label for="sale_price_1">Sale Price:</label>
+            <input type="number" name="sale_price_1" step="0.01" id="sale_price_1" required>
+
+            <label for="note_1">Note:</label>
+            <input type="text" name="note_1" id="note_1" >
+        </div>
+    </div>
+
+    <!-- Thêm chi tiết đơn nhập hàng -->
+    <button type="button" onclick="addSaleDetail()">Add Product</button>
+
+    <!-- Nút submit -->
+    <button type="submit">Submit Sale Order</button>
+</form>
+
+<!-- Script để thêm các chi tiết đơn nhập hàng mới -->
+<script>
+    let detailCount = 1;
+
+    function addSaleDetail() {
+        detailCount++;
+
+        const saleDetail = document.createElement('div');
+        saleDetail.className = 'sale_detail';
+        saleDetail.id = 'saleDetailContainer';
+
+        saleDetail.innerHTML = `
+            <div class="sale_detail">
+                <label for="product_${detailCount}">Product:</label>
+                <input type="text" id="product_search_${detailCount}" placeholder="Search products">
+                <select name="product_${detailCount}" id="product_${detailCount}"></select>
+            </div>
+
+            <div class="sale_detail">
+               
+                <label for="quantity_${detailCount}">Quantity:</label>
+                <input type="number" name="quantity_${detailCount}" step="0.01" id="quantity_${detailCount}" required>
+                <label for="sale_price_${detailCount}">Sale Price:</label>
+                <input type="number" name="sale_price_${detailCount}" step="0.01" id="sale_price_${detailCount}" required>
+                <label for="note_${detailCount}">Note:</label>
+                <input type="text" name="note_${detailCount}" id="note_${detailCount}" >
+            </div>
+        `;
+
+        document.getElementById('sale_details').appendChild(saleDetail);
+
+        const selectBox = document.getElementById(`product_${detailCount}`);
+
+        $(`#product_search_${detailCount}`).on('input', function () {
+            var searchQuery = $(this).val();
+
+            $.ajax({
+                url: "{% url 'product_search' %}",
+                data: {
+                    'search_query': searchQuery
+                },
+                success: function (data) {
+                    var productDropdown = $(`#product_${detailCount}`);
+                    productDropdown.empty();
+
+                    $.each(data.products, function (index, product) {
+                        productDropdown.append($('<option>', {
+                            value: product.productID,
+                            text: product.name
+                        }));
+                    });
+                }
+            });
+            
+        });
+        $(`#product_${detailCount}`).on('change', function() {
+            var selectedProductId = $(this).val();
+
+            $.ajax({
+                url: "{% url 'product_info' 0 %}".replace('0', selectedProductId),
+                success: function(data) {
+                    // Parse the JSON response
+                    var productData = JSON.parse(data.product)[0];
+            
+                    if (productData && productData.fields) {
+                        // Update the HTML with product information
+                        $('#product_info').html(`
+                            <h3>${productData.fields.name}</h3>
+                            <p><strong>In Price Near:</strong> $${productData.fields.in_price_near ? productData.fields.in_price_near.toFixed(2) : 'N/A'}</p>
+                            <p><strong>In Price Avg:</strong> $${productData.fields.in_price_avg ? productData.fields.in_price_avg.toFixed(2) : 'N/A'}</p>
+                            <p><strong>Quantity:</strong> ${productData.fields.quantity || 'N/A'}</p>
+                        `);
+                    } else {
+                        // Handle the case where the data is not as expected
+                        console.error('Invalid product data format:', productData);
+                    }
+                }
+            });
+        });
+    }
+</script>
+{% endblock sale %}
+{% block language %}
+{% include "app/language.html" with var="orderlist" %}
+{% endblock language %}

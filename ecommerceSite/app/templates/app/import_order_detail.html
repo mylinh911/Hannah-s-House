@@ -1,0 +1,38 @@
+<!-- app/templates/app/import_order_detail.html -->
+
+{% extends 'app/base.html' %}
+
+{% block import_order_detail %}
+  <div class="container mt-5">
+    <h1>Import Order Detail</h1>
+    
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Import Date</th>
+                <th>Suplier</th>
+                <!-- Add more columns as needed -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for import_order in import_orders %}
+                <tr>
+                    <td>{{ import_order.import_date }}</td>
+                    <td>{{ import_order.suplier.name }}</td>
+                    <!-- Add more fields as needed -->
+                </tr>
+                {% for import_order_detail in import_order.importorderdetail_set.all %}
+                    <tr>
+                        <td></td>
+                        <td><a href="{% url 'admin:app_importorderdetail_change' import_order_detail.id %}">{{ import_order_detail.product.name }}</td>
+                        <td>{{ import_order_detail.quantity }}</td>
+                        <td>{{ import_order_detail.in_price }}</td>
+                    </tr>
+                {% endfor %}
+            {% endfor %}
+            {% comment %} <h2>Total cost: {{total_cost|floatformat:1 }}</h2> {% endcomment %}
+        </tbody>
+    </table>
+
+  </div>
+{% endblock %}

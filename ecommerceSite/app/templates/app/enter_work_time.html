@@ -1,0 +1,22 @@
+<!-- app/enter_work_time.html -->
+{% extends 'app/base.html' %}
+
+{% block enter_work_time %}
+  <h2>Enter Work Time</h2>
+  <form method="post">
+    {% csrf_token %}
+    <label for="employee">Employee:</label>
+    <select name="employee_name" id="employee">
+        {% for employee in employees %}
+            <option value="{{ employee.name }}">{{ employee.name }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="work_date">Work Date:</label>
+    <input type="date" name="work_date" id="work_date" required>
+
+    <label for="work_time">Work Time:</label>
+            <input type="number" name="work_time" step="0.01" id="work_time" required>
+    <button type="submit">Submit</button>
+  </form>
+{% endblock %}

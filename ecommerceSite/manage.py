@@ -2,7 +2,13 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
+import webbrowser
 
+# Địa chỉ URL mặc định sau khi chạy runserver
+default_url = 'http://127.0.0.1:8000/'
+
+# Mở trình duyệt tự động với URL mặc định
+webbrowser.open(default_url)
 
 def main():
     """Run administrative tasks."""

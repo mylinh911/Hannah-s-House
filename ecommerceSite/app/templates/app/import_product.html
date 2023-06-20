@@ -1,0 +1,376 @@
+{% extends 'app/base.html' %}
+{% load static %}
+{% load i18n %}
+{% block import_product %}
+<h1><a href="{% url 'import_order_detail' %}">Đơn đã nhập</a></h1>
+<h1>{{ import_cost }}</h1>
+
+<!-- Form để nhập hàng -->
+<form method="post" action="{% url 'import_product' %}">
+    {% csrf_token %}
+
+    <!-- Thông tin đơn nhập hàng -->
+    <label for="supplier">Supplier:</label>
+    <select name="supplier_name" id="supplier">
+        {% for supplier in suppliers %}
+            <option value="{{ supplier.name }}">{{ supplier.name }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="import_date">Import Date:</label>
+    <input type="date" name="import_date" id="import_date" required>
+
+    <!-- Chi tiết đơn nhập hàng -->
+    <div id="import_details">
+        <div id="product_info">
+            <!-- Product information will be displayed here -->
+        </div>
+        
+        <div class="import_detail">
+            <label for="product_1">Product:</label>
+            <!-- Include jQuery -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+        <!-- Your search box -->
+        <input type="text" id="product_search" placeholder="Search products">
+
+        <!-- Your product dropdown -->
+        <select name="product_1" id="product_1"></select>
+
+        <script>
+            $(document).ready(function() {
+                $('#product_search').on('input', function() {
+                    var searchQuery = $(this).val();
+        
+                    $.ajax({
+                        url: "{% url 'product_search' %}",
+                        data: {
+                            'search_query': searchQuery
+                        },
+                        success: function(data) {
+                            var productDropdown = $('#product_1');
+                            productDropdown.empty();
+        
+                            $.each(data.products, function(index, product) {
+                                productDropdown.append($('<option>', {
+                                    value: product.productID,
+                                    text: product.name
+                                }));
+                            });
+                        }
+                    });
+                });
+        
+                $('#product_1').on('change', function() {
+                    var selectedProductId = $(this).val();
+        
+                    $.ajax({
+                        url: "{% url 'product_info' 0 %}".replace('0', selectedProductId),
+                        success: function(data) {
+                            // Parse the JSON response
+                            var productData = JSON.parse(data.product)[0];
+                    
+                            if (productData && productData.fields) {
+                                // Update the HTML with product information
+                                $('#product_info').html(`
+                                    <h3>${productData.fields.name}</h3>
+                                    <p><strong>In Price Near:</strong> $${productData.fields.in_price_near ? productData.fields.in_price_near.toFixed(2) : 'N/A'}</p>
+                                    <p><strong>In Price Avg:</strong> $${productData.fields.in_price_avg ? productData.fields.in_price_avg.toFixed(2) : 'N/A'}</p>
+                                    <p><strong>Quantity:</strong> ${productData.fields.quantity || 'N/A'}</p>
+                                `);
+                            } else {
+                                // Handle the case where the data is not as expected
+                                console.error('Invalid product data format:', productData);
+                            }
+                        }
+                    });
+                });
+            });
+        </script>
+        
+        </div>
+        <div class="import_detail">
+            <input type="text" name="newProductName_1" id="newProductName_1" placeholder="Name of new product">
+            <!-- FILEPATH: /media/mylinh/New Volume/InternSun/Backend/Django/python_hn_naitei17_ecommerce/ecommerceSite/app/templates/app/import_product.html -->
+            <!-- This select element represents the main category selection. When the value of this select element changes, the loadSubcategories() function is called. -->
+            <select id="main-category_1" onchange="loadSubcategories(1)">
+                <option value="">Chọn một danh mục</option>
+                {% for category in categories %}
+                    <option value="{{ category.id }}">{{ category.name }}</option>
+                {% endfor %}
+            </select>
+
+            <!-- Hiển thị danh sách Subcategory -->
+            <select id="sub-category_1" onchange="loadSubsubcategories(1)" disabled>
+                <option value="">Chọn một subcategory</option>
+            </select>
+
+            <!-- Hiển thị danh sách Sub-subcategory -->
+            <select id="sub-sub-category_1" onchange="loadSubsubsubcategories(1)" disabled>
+                <option value="">Chọn một sub-subcategory</option>
+            </select>
+
+            <!-- Các trường ẩn -->
+            <input type="hidden" id="selected-category_1" name="selected_category_1">
+            <input type="hidden" id="selected-subcategory_1" name="selected_subcategory_1">
+            <input type="hidden" id="selected-subsubcategory_1" name="selected_subsubcategory_1">
+            <script>
+                var selectBox = document.getElementById('product_1');
+                var inputBox = document.getElementById('newProductName_1');
+                var category = document.getElementById('main-category_1');
+                var subCategory = document.getElementById('sub-category_1');
+                var subsubCategory = document.getElementById('sub-sub-category_1');
+                
+                
+                // Initially hide the input box
+                inputBox.style.display = 'none';
+                category.style.display = 'none';
+                subCategory.style.display = 'none';
+                subsubCategory.style.display = 'none';
+                
+                // Listen for changes on the select box
+                selectBox.addEventListener('change', function() {
+                    console.log(selectBox.value);
+                    // If "new product" is selected, show the input box. Otherwise, hide it.
+                    if (selectBox.value === '777') {
+                        inputBox.style.display = 'block';
+                        category.style.display = 'block';
+                        subCategory.style.display = 'block';
+                        subsubCategory.style.display = 'block';
+                        console.log('new hi');
+                    } else {
+                        inputBox.style.display = 'none';
+                        category.style.display = 'none';
+                        subCategory.style.display = 'none';
+                        subsubCategory.style.display = 'none';
+                    }
+                });
+            </script>
+            <label for="quantity_1">Quantity:</label>
+            <input type="number" name="quantity_1" step="0.01" id="quantity_1" required>
+
+            <label for="in_price_1">In Price:</label>
+            <input type="number" name="in_price_1" step="0.01" id="in_price_1" required>
+        </div>
+    </div>
+
+    <!-- Thêm chi tiết đơn nhập hàng -->
+    <button type="button" onclick="addImportDetail()">Add Product</button>
+
+    <!-- Nút submit -->
+    <button type="submit">Submit Import Order</button>
+</form>
+
+<!-- Script để thêm các chi tiết đơn nhập hàng mới -->
+<script>
+    let detailCount = 1;
+
+    function addImportDetail() {
+        detailCount++;
+
+        const importDetail = document.createElement('div');
+        importDetail.className = 'import_detail';
+        importDetail.id = 'importDetailContainer';
+
+        importDetail.innerHTML = `
+            <div class="import_detail">
+                <label for="product_${detailCount}">Product:</label>
+                <input type="text" id="product_search_${detailCount}" placeholder="Search products">
+                <select name="product_${detailCount}" id="product_${detailCount}"></select>
+            </div>
+
+            <div class="import_detail">
+                <input type="text" name="newProductName_${detailCount}" id="newProductName_${detailCount}" placeholder="Name of new product" style="display: none;">
+                <select id="main-category_${detailCount}" onchange="loadSubcategories(${detailCount})">
+                    <option value="">Chọn một danh mục</option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}">{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+    
+                <!-- Hiển thị danh sách Subcategory -->
+                <select id="sub-category_${detailCount}" onchange="loadSubsubcategories(${detailCount})" disabled>
+                    <option value="">Chọn một subcategory</option>
+                </select>
+    
+                <!-- Hiển thị danh sách Sub-subcategory -->
+                <select id="sub-sub-category_${detailCount}" onchange="loadSubsubsubcategories(${detailCount})" disabled>
+                    <option value="">Chọn một sub-subcategory</option>
+                </select>
+    
+                <!-- Các trường ẩn -->
+                <input type="hidden" id="selected-category_${detailCount}" name="selected_category_${detailCount}">
+                <input type="hidden" id="selected-subcategory_${detailCount}" name="selected_subcategory_${detailCount}">
+                <input type="hidden" id="selected-subsubcategory_${detailCount}" name="selected_subsubcategory_${detailCount}">
+                <label for="quantity_${detailCount}">Quantity:</label>
+                <input type="number" name="quantity_${detailCount}" step="0.01" id="quantity_${detailCount}" required>
+                <label for="in_price_${detailCount}">In Price:</label>
+                <input type="number" name="in_price_${detailCount}" step="0.01" id="in_price_${detailCount}" required>
+            </div>
+        `;
+
+        document.getElementById('import_details').appendChild(importDetail);
+
+        const selectBox = document.getElementById(`product_${detailCount}`);
+        const inputBox = document.getElementById(`newProductName_${detailCount}`);
+        var category = document.getElementById(`main-category_${detailCount}`);
+        var subCategory = document.getElementById(`sub-category_${detailCount}`);
+        var subsubCategory = document.getElementById(`sub-sub-category_${detailCount}`);
+        
+
+        // Initially hide the input box
+        inputBox.style.display = 'none';
+        category.style.display = 'none';
+        subCategory.style.display = 'none';
+        subsubCategory.style.display = 'none';
+
+        // Listen for changes on the select box
+        selectBox.addEventListener('change', function () {
+            // If "new product" is selected, show the input box. Otherwise, hide it.
+            if (selectBox.value === '777') {
+                inputBox.style.display = 'block';
+                category.style.display = 'block';
+                subCategory.style.display = 'block';
+                subsubCategory.style.display = 'block';
+            } else {
+                inputBox.style.display = 'none';
+                category.style.display = 'none';
+                subCategory.style.display = 'none';
+                subsubCategory.style.display = 'none';
+            }
+        });
+
+        $(`#product_search_${detailCount}`).on('input', function () {
+            var searchQuery = $(this).val();
+
+            $.ajax({
+                url: "{% url 'product_search' %}",
+                data: {
+                    'search_query': searchQuery
+                },
+                success: function (data) {
+                    var productDropdown = $(`#product_${detailCount}`);
+                    productDropdown.empty();
+
+                    $.each(data.products, function (index, product) {
+                        productDropdown.append($('<option>', {
+                            value: product.productID,
+                            text: product.name
+                        }));
+                    });
+                }
+            });
+            
+        });
+        $(`#product_${detailCount}`).on('change', function() {
+            var selectedProductId = $(this).val();
+
+            $.ajax({
+                url: "{% url 'product_info' 0 %}".replace('0', selectedProductId),
+                success: function(data) {
+                    // Parse the JSON response
+                    var productData = JSON.parse(data.product)[0];
+            
+                    if (productData && productData.fields) {
+                        // Update the HTML with product information
+                        $('#product_info').html(`
+                            <h3>${productData.fields.name}</h3>
+                            <p><strong>In Price Near:</strong> $${productData.fields.in_price_near ? productData.fields.in_price_near.toFixed(2) : 'N/A'}</p>
+                            <p><strong>In Price Avg:</strong> $${productData.fields.in_price_avg ? productData.fields.in_price_avg.toFixed(2) : 'N/A'}</p>
+                            <p><strong>Quantity:</strong> ${productData.fields.quantity || 'N/A'}</p>
+                        `);
+                    } else {
+                        // Handle the case where the data is not as expected
+                        console.error('Invalid product data format:', productData);
+                    }
+                }
+            });
+        });
+    }
+</script>
+<script>
+    function loadSubcategories(detailCount) {
+        var mainCategory = document.getElementById('main-category_' + detailCount);
+        var subCategory = document.getElementById('sub-category_'+ detailCount);
+        var subSubCategory = document.getElementById('sub-sub-category_'+ detailCount);
+
+        // Reset Subcategory and Sub-subcategory dropdowns
+        subCategory.innerHTML = '<option value="">Chọn một subcategory</option>';
+        subSubCategory.innerHTML = '<option value="">Chọn một sub-subcategory</option>';
+
+        // Enable Subcategory dropdown
+        subCategory.disabled = false;
+
+        // Get the selected main category ID
+        var mainCategoryId = mainCategory.value;
+
+        // Send an AJAX request to get subcategories based on the selected main category
+        // You need to implement the logic for fetching subcategories in your Django views
+        // The response should be a JSON array containing subcategories
+        fetch(`/get_subcategories/${mainCategoryId}/`)
+            .then(response => response.json())
+            .then(data => {
+                // Populate the Subcategory dropdown with the retrieved subcategories
+                data.forEach(subcategory => {
+                    var option = document.createElement('option');
+                    option.value = subcategory.id;
+                    option.text = subcategory.name;
+                    subCategory.appendChild(option);
+                });
+            });
+
+        // Lấy giá trị của selected category và cập nhật trường ẩn
+        var selectedCategory = document.getElementById('main-category_'+ detailCount).value;
+        document.getElementById('selected-category_'+ detailCount).value = selectedCategory;
+        // Reset giá trị của selected subcategory và selected sub-subcategory
+        document.getElementById('selected-subcategory_'+ detailCount).value = "";
+        document.getElementById('selected-subsubcategory_'+ detailCount).value = "";
+    }
+
+    function loadSubsubcategories(detailCount) {
+        var subCategory = document.getElementById('sub-category_'+ detailCount);
+        var subSubCategory = document.getElementById('sub-sub-category_'+ detailCount);
+
+        // Reset Sub-subcategory dropdown
+        subSubCategory.innerHTML = '<option value="">Chọn một sub-subcategory</option>';
+
+        // Enable Sub-subcategory dropdown
+        subSubCategory.disabled = false;
+
+        // Get the selected subcategory ID
+        var subCategoryId = subCategory.value;
+
+        // Send an AJAX request to get sub-subcategories based on the selected subcategory
+        // You need to implement the logic for fetching sub-subcategories in your Django views
+        // The response should be a JSON array containing sub-subcategories
+        fetch(`/get_subsubcategories/${subCategoryId}/`)
+            .then(response => response.json())
+            .then(data => {
+                // Populate the Sub-subcategory dropdown with the retrieved sub-subcategories
+                data.forEach(subsubcategory => {
+                    var option = document.createElement('option');
+                    option.value = subsubcategory.id;
+                    option.text = subsubcategory.name;
+                    subSubCategory.appendChild(option);
+                });
+            });
+
+        // Lấy giá trị của selected subcategory và cập nhật trường ẩn
+        var selectedSubcategory = document.getElementById('sub-category_'+ detailCount).value;
+        document.getElementById('selected-subcategory_'+ detailCount).value = selectedSubcategory;
+
+    }
+
+    function loadSubsubsubcategories(detailCount) {
+        var subsubCategory = document.getElementById('sub-sub-category_'+ detailCount);
+
+        // Lấy giá trị của selected sub-subcategory và cập nhật trường ẩn
+        var selectedSubsubcategory = document.getElementById('sub-sub-category_'+ detailCount).value;
+        document.getElementById('selected-subsubcategory_'+ detailCount).value = selectedSubsubcategory;
+    }
+</script>
+
+{% endblock import_product %}
+{% block language %}
+{% include "app/language.html" with var="orderlist" %}
+{% endblock language %}

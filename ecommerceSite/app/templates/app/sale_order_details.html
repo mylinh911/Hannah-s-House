@@ -1,0 +1,42 @@
+<!-- app/templates/app/sale_order_details.html -->
+
+{% extends 'app/base.html' %}
+
+{% block sale_order_details %}
+    <h1>All Sale Order Details</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Sale Price</th>
+                <th>Revenue</th>
+                <th>
+                    {% if request.GET.order_by_interest == 'desc' %}
+                        <a href="?{{ request.GET.urlencode }}&order_by_interest=asc">Interest &#x2193;</a>
+                    {% else %}
+                        <a href="?{{ request.GET.urlencode }}&order_by_interest=desc">Interest &#x2191;</a>
+                    {% endif %}
+                </th>
+                <th>Note</th>
+                <!-- Add more columns as needed -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for detail in sale_order_details %}
+                <tr>
+                    <td><a href="{% url 'admin:app_saleorderdetail_change' detail.id %}">{{ detail.product.name }}</td>
+                    <td>{{ detail.quantity }}</td>
+                    <td>{{ detail.product.in_price_avg|floatformat:1 }}</td>
+                    <td>{{ detail.in_price|floatformat:1 }}</td>
+                    <td>{{ detail.sale_price|floatformat:1 }}</td>
+                    <td>{{ detail.revenue|floatformat:1 }}</td>
+                    <td>{{ detail.interest|floatformat:1 }}</td>
+                    <td>{{ detail.note }}</td>
+                    <!-- Add more fields as needed -->
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

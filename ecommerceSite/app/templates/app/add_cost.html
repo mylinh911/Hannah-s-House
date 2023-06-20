@@ -1,0 +1,18 @@
+{% extends 'app/base.html' %}
+
+{% block Cost %}
+  <h1>Add Cost</h1>
+  <form method="post">
+    {% csrf_token %}
+    <label for="expense_date">Expense date:</label>
+    <input type="date" name="expense_date" id="expense_date" required>
+
+    <label for="description">Description:</label>
+    <input type="text" name="description" id="description" required>
+
+    <label for="amount">Amount:</label>
+    <input type="number" name="amount" id="amount" required>
+
+    <button type="submit">Submit</button>
+  </form>
+{% endblock %}

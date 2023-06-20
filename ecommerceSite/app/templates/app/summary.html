@@ -1,0 +1,27 @@
+<!-- summary.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Summary</title>
+</head>
+<p>Tổng vốn: {{ total_cost }}</p>
+<body>
+    <h1>Summary</h1>
+    <table border="1">
+        <tr>
+            <th>Tên sản phẩm</th>
+            <th>Số lượng</th>
+            <th>Giá nhập gần nhất</th>
+            <th>Giá nhập trung bình</th>
+        </tr>
+        {% for product in products %}
+            <tr>
+                <td><a href="{% url 'admin:app_product_change' product.productID %}">{{ product.name }}</a></td>
+                <td>{{ product.quantity|floatformat:0 }}</td>
+                <td>{{ product.in_price_near }}</td>
+                <td>{{ product.in_price_avg }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!-- salary_detail.html -->
+
+{% extends 'app/base.html' %}
+
+{% block salary_detail %}
+  <div class="container mt-5">
+    <h1>Salary Detail</h1>
+    <form method="post">
+        {% csrf_token %}
+        <label for="employee">Employee:</label>
+        <select id="employee" name="employee">
+            <option value="">--Select--</option>
+            {% for employee in employees %}
+                <option value="{{ employee.id }}" {% if request.GET.employee == employee.id|stringformat:"s" %}selected{% endif %}>{{ employee.name }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="month">Month:</label>
+        <input type="month" id="month" name="month" value="{{ request.GET.month }}">
+        <!-- Thêm điều kiện kiểm tra trước khi sử dụng request.GET.month -->
+        {% if request.GET.month %}
+            <input type="hidden" name="month" value="{{ request.GET.month }}">
+        {% endif %}
+
+        <button type="submit">Submit</button>
+    </form>
+
+    <tr>
+      <td>Tổng số giờ làm</td>
+      <td>{{ total_work_hours }}</td>
+    </tr>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Details</th>
+          <th>Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Lương theo giờ</td>
+          <td>{{ hourly_salary }}</td>
+        </tr>
+        <tr>
+          <td>Phụ cấp ăn trưa</td>
+          <td>{{ meal_allowance }}</td>
+        </tr>
+        <tr>
+          <td>Phụ cấp xăng xe</td>
+          <td>{{ fuel_allowance }}</td>
+        </tr>
+        <tr>
+          <td>Tiền hoa hồng</td>
+          <td>{{ commission }}</td>
+        </tr>
+        <tr>
+          <td>Lương thưởng</td>
+          <td>{{ bonus_salary }}</td>
+        </tr>
+        <tr>
+          <td>Lương chuyên cần</td>
+          <td>{{ bonus_full_time }}</td>
+        </tr>
+        <tr class="table-info">
+          <td>Tổng cộng</td>
+          <td>{{ total_salary }}</td>
+        </tr>
+      </tbody>
+    </table>
+    
+    {% with work_times|dictsort:"work_date" as sorted_work_times %}
+        {% for work_time in sorted_work_times %}
+            <table class="table">
+                <tbody>
+                    <tr style="font-weight: bold;">
+                        <td>{{ work_time.work_date }}</td>
+                        <td>{{ work_time.work_time }} giờ</td>
+                        <td></td>
+                    </tr>
+                    {% comment %} <tr style="font-weight: bold;">
+                      <td>{{ work_time.work_time }} giờ</td>
+                      <td></td>
+                  </tr> {% endcomment %}
+                    {% regroup sale_orders by sale_date as sale_date_list %}
+                    {% for sale_date in sale_date_list %}
+                        {% if sale_date.grouper == work_time.work_date %}
+                            {% for sale_order in sale_date.list %}
+                                {% for detail in sale_order.saleorderdetail_set.all %}
+                                    <tr>
+                                        <td></td>
+                                        <td><a href="{% url 'admin:app_saleorderdetail_change' detail.id %}">{{ detail.product.name }}</td>
+                                        <td>{{ detail.quantity }}</td>
+                                        <td>{{ detail.sale_price|floatformat:1 }}</td>
+                                        <td>{{ detail.revenue|floatformat:1 }}</td>
+                                    </tr>
+                                {% endfor %}
+                            {% endfor %}
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endfor %}
+    {% endwith %}
+  </div>
+
+{% endblock %}
